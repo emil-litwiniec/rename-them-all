@@ -21,7 +21,12 @@ const argv = yargs
     },
     'suffix': {
         alias: 's',
-        describe: 'Adds index number to the existing file name',
+        describe: 'Adds custom suffix to the existing file name',
+        demandOption: false
+    },
+    'prefix': {
+        alias: 'p',
+        describe: 'Adds custom prefix to the existing file name',
         demandOption: false
     }
     })
@@ -31,6 +36,8 @@ const argv = yargs
 
 const rename = util.promisify(fs.rename);
 const inputType = argv.type;
+const prefix = argv.prefix;
+const suffix = argv.suffix;
 const pathToFiles = path.join(__dirname, '/mock-files');
 const inputFileName = argv.fileName;
 
@@ -39,10 +46,10 @@ let files = fs.readdirSync(pathToFiles)
 
 
 
-if(argv.type) {
+if(inputType) {
     files = files.filter(file => file.ext == `.${argv.type}`);
 }
-console.log(files);
+// console.log(files);
 
 
 const sortByNumber = (a, b) => {
@@ -51,7 +58,7 @@ const sortByNumber = (a, b) => {
     return 0;
 }
 
-const insertIndex = (fileName, index, suffix) => {
+const insertIndex = (fileName, index) => {
 
     const regex = /\[#{1,3}\]/g;
     const oneHash = /\[#\]/g;
@@ -78,18 +85,8 @@ const insertIndex = (fileName, index, suffix) => {
         }
     }
 
-    if(suffix) {
-        
-        switch(suffix.match(regex)[0]) {
-            case '[#]':
-                return `${fileName}_${suffix.replace(oneHash, index)}`;
-            case '[##]':
-                return `${fileName}_${suffix.replace(twoHashes, `${zeros(2, index)}${index}`)}`;
-            case '[###]':
-                return `${fileName}_${suffix.replace(threeHashes, `${zeros(3, index)}${index}`)}`;
-            default:
-                return 'hello';
-        }
+    if(!fileName.match(regex)) {
+        return fileName;
     }
 
     switch(fileName.match(regex)[0]) {
@@ -118,15 +115,28 @@ const renameFiles = (files, newName) => {
 };
 const addSuffix = (files, suffix) => {
     files.forEach((file, index) => {
+        let suffixedName = `${file.name}${suffix}`;
         let fullFileName = `${pathToFiles}/${file.name}${file.ext}`
-        let fullNewName = `${pathToFiles}/${insertIndex(file.name, index+1, suffix)}${file.ext}`
+        let fullNewName = `${pathToFiles}/${insertIndex(suffixedName, index+1)}${file.ext}`
         rename(fullFileName, fullNewName)
     });
     
 };
+const addPrefix = (files, prefix) => {
+    files.forEach((file, index) => {
+        let prefixedName = `${prefix}${file.name}`;
+        let fullFileName = `${pathToFiles}/${file.name}${file.ext}`
+        let fullNewName = `${pathToFiles}/${insertIndex(prefixedName, index+1)}${file.ext}`
+        rename(fullFileName, fullNewName);
+    });
+    
+};
 
-argv.suffix && addSuffix(files, argv.suffix)
+suffix && addSuffix(files, suffix);
+prefix && addPrefix(files, prefix);
 
 argv.fileName && renameFiles(files, inputFileName);
+
+console.log(fs.readdirSync(pathToFiles));
 
 // const dimensions = sizeOf(`${pathToFiles}/image.png`);
