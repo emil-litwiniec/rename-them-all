@@ -1,0 +1,79 @@
+#!/usr/bin/env node
+
+
+const fs = require('fs');
+const util = require('util');
+const path = require('path');
+const args = require('args');
+const sizeOf = require('image-size');
+
+
+const rename = util.promisify(fs.rename);
+
+const pathToFiles = path.join(__dirname, '/mock-files');
+const inputFileName = args.raw._[0];
+
+const files = fs.readdirSync(pathToFiles)
+    .map(file => path.parse(file));
+
+const sortByNumber = (a, b) => {
+    if (+a.name < +b.name) return -1;
+    if (+a.name > +b.name) return 1;
+    return 0;
+}
+
+const insertIndex = (fileName, index) => {
+
+    const regex = /\[#{1,3}\]/g;
+    const oneHash = /\[#\]/g;
+    const twoHashes = /\[##\]/g;
+    const threeHashes = /\[###\]/g;
+    const zeros = (hashes, index) => {
+        const length = index.toString().length;
+        if(hashes == 2) {
+            switch(length) {
+                case 1: 
+                    return '0';
+                default:
+                    break;
+            }
+        } else if (hashes == 3) {
+            switch(length) {
+                case 1:
+                    return '00';
+                case 2:
+                    return '0';
+                default:
+                    break;
+            }
+        }
+    }
+
+    switch(fileName.match(regex)[0]) {
+        case '[#]':
+            return fileName.replace(oneHash, index);
+        case '[##]':
+            return fileName.replace(twoHashes, `${zeros(2, index)}${index}`);
+        case '[###]':
+            return fileName.replace(threeHashes, `${zeros(3, index)}${index}`);
+        default:
+            return 'hello';
+    }
+
+};
+
+
+
+
+const renameFiles = (files, newName) => {
+    files.forEach((file, index) => {
+        let fullFileName = `${pathToFiles}/${file.name}${file.ext}`
+        let fullNewName = `${pathToFiles}/${insertIndex(newName, index+1)}${file.ext}`
+        rename(fullFileName, fullNewName)
+    });
+    
+};
+
+renameFiles(files, inputFileName);
+
+// const dimensions = sizeOf(`${pathToFiles}/image.png`);

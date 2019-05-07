@@ -1,0 +1,17 @@
+{
+  "name": "rename_playground",
+  "version": "1.0.0",
+  "description": "",
+  "main": "rename.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "args": "^5.0.1",
+    "exif-parser": "^0.1.12",
+    "image-size": "^0.7.4",
+    "png-metadata": "^1.0.2"
+  }
+}
