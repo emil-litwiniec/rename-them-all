@@ -4,17 +4,46 @@
 const fs = require('fs');
 const util = require('util');
 const path = require('path');
-const args = require('args');
+const yargs = require('yargs');
 const sizeOf = require('image-size');
+
+const argv = yargs
+    .options({
+    'fileName': {
+        alias: 'f',
+        describe: 'Your new custom name',
+        demandOption: false
+    },
+    'type': {
+        alias: 't',
+        describe: 'Type of files you want to rename',
+        demandOption: false
+    },
+    'suffix': {
+        alias: 's',
+        describe: 'Adds index number to the existing file name',
+        demandOption: false
+    }
+    })
+    .help()
+    .argv;
 
 
 const rename = util.promisify(fs.rename);
-
+const inputType = argv.type;
 const pathToFiles = path.join(__dirname, '/mock-files');
-const inputFileName = args.raw._[0];
+const inputFileName = argv.fileName;
 
-const files = fs.readdirSync(pathToFiles)
+let files = fs.readdirSync(pathToFiles)
     .map(file => path.parse(file));
+
+
+
+if(argv.type) {
+    files = files.filter(file => file.ext == `.${argv.type}`);
+}
+console.log(files);
+
 
 const sortByNumber = (a, b) => {
     if (+a.name < +b.name) return -1;
@@ -22,7 +51,7 @@ const sortByNumber = (a, b) => {
     return 0;
 }
 
-const insertIndex = (fileName, index) => {
+const insertIndex = (fileName, index, suffix) => {
 
     const regex = /\[#{1,3}\]/g;
     const oneHash = /\[#\]/g;
@@ -46,6 +75,20 @@ const insertIndex = (fileName, index) => {
                 default:
                     break;
             }
+        }
+    }
+
+    if(suffix) {
+        
+        switch(suffix.match(regex)[0]) {
+            case '[#]':
+                return `${fileName}_${suffix.replace(oneHash, index)}`;
+            case '[##]':
+                return `${fileName}_${suffix.replace(twoHashes, `${zeros(2, index)}${index}`)}`;
+            case '[###]':
+                return `${fileName}_${suffix.replace(threeHashes, `${zeros(3, index)}${index}`)}`;
+            default:
+                return 'hello';
         }
     }
 
@@ -73,7 +116,17 @@ const renameFiles = (files, newName) => {
     });
     
 };
+const addSuffix = (files, suffix) => {
+    files.forEach((file, index) => {
+        let fullFileName = `${pathToFiles}/${file.name}${file.ext}`
+        let fullNewName = `${pathToFiles}/${insertIndex(file.name, index+1, suffix)}${file.ext}`
+        rename(fullFileName, fullNewName)
+    });
+    
+};
 
-renameFiles(files, inputFileName);
+argv.suffix && addSuffix(files, argv.suffix)
+
+argv.fileName && renameFiles(files, inputFileName);
 
 // const dimensions = sizeOf(`${pathToFiles}/image.png`);
