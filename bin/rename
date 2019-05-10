@@ -3,7 +3,8 @@
 const yargs = require('yargs');
 const inquirer = require('inquirer');
 const chalk = require('chalk');
-const main = require('./modules/main');
+const main = require('../src/main');
+
 
 const argv = yargs
     .options({
@@ -38,6 +39,7 @@ const argv = yargs
     })
     .help()
     .argv;
+
 
 inquirer
     .prompt([{

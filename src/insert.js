@@ -37,7 +37,6 @@ switch (fileName.match(regex)[0]) {
     case '[#]':
         return fileName.replace(oneHash, index);
     case '[##]':
-        npm
         return fileName.replace(twoHashes, `${zeros(2, index)}${index}`);
     case '[###]':
         return fileName.replace(threeHashes, `${zeros(3, index)}${index}`);

@@ -1,20 +1,23 @@
 {
-  "name": "rename_playground",
+  "name": "@emilthesadcat/rename-them-all",
   "version": "1.0.0",
-  "description": "",
-  "main": "rename.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "CLI tool for ease rename multiple files",
+  "main": "rename",
+  "bin": {
+    "@emilthesadcat/rename-them-all": "bin/rename",
+    "rename-them-all": "bin/rename"
   },
-  "author": "",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Emil Litwiniec",
   "license": "ISC",
   "dependencies": {
     "args": "^5.0.1",
     "chalk": "^2.4.2",
-    "exif-parser": "^0.1.12",
     "image-size": "^0.7.4",
     "inquirer": "^6.3.1",
-    "png-metadata": "^1.0.2",
+    "natural-compare-lite": "^1.4.0",
     "yargs": "^13.2.2"
   }
 }

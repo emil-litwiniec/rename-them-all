@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const insert = require('./insert');
 const utils = require('./utils');
+const naturalCompare = require('natural-compare-lite');
 
 const logError = (err) => {
     console.log(chalk.red(err));
@@ -13,14 +14,16 @@ const logError = (err) => {
 
 const rename = util.promisify(fs.rename);
 
+
+
 exports.runRename = (argv) => {
 
     const inputType = argv.type;
     const prefix = argv.prefix;
     const suffix = argv.suffix;
     const inputTypeGroup = argv.typeGroup;
-    const pathToFiles = path.join(__dirname, '/mock-files');
-    const inputFileName = argv.fileName;
+    const pathToFiles = process.cwd();
+    const inputFileName =  argv._[0] || argv.fileName;
     const imageSizeGroup = argv.imageSizeGroup;
     let files;
 
@@ -33,8 +36,25 @@ exports.runRename = (argv) => {
 
     (function createFilesList() {
 
+        const compare = (a, b) => {
+            if (a.ext < b.ext) {
+                return 1
+            }
+            if (a.ext > b.ext) {
+                return -1
+            }
+            return 0
+        };
+        const compare2 = (a, b) => {
+            return naturalCompare(a.name, b.name);
+        };
+
+
         files = fs.readdirSync(pathToFiles)
-            .map(file => path.parse(file));
+            .map(file => path.parse(file))
+            .sort(compare2);
+
+        console.log(files);
 
         if (inputType) {
             files = files.filter(file => file.ext == `.${inputType}`);
@@ -53,13 +73,12 @@ exports.runRename = (argv) => {
 
         files.forEach((file, index) => {
             let fullFileName = `${pathToFiles}/${file.name}${file.ext}`
-            let newFileName = utils.availableFileName(newName, index, insert.index, pathToFiles);
+            let newFileName = utils.availableFileName(newName, index + 1, insert.index, pathToFiles);
 
             let fullNewName = `${pathToFiles}/${newFileName}${file.ext}`;
 
             // check if input type group is set to images, then adds dimensions to the file name
             if (fullNewName.match(imageSizeRegex) && inputTypeGroup == 'images') {
-                // insertImageSizeGroup(fullFileName);
                 fullNewName = insert.imageSize(fullFileName, fullNewName);
             } else if (fullNewName.match(imageSizeRegex)) {
                 fullNewName = utils.removeUnusedVariable(fullNewName);
@@ -103,5 +122,5 @@ exports.runRename = (argv) => {
 
     suffix && prefix && addPrefixAndSuffix(files, prefix, suffix);
 
-    argv.fileName && renameFiles(files, inputFileName);
+    inputFileName && renameFiles(files, inputFileName);
 }
