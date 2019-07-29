@@ -8,23 +8,18 @@ const main = require('../src/main');
 
 const argv = yargs
     .options({
-        'fileName': {
-            alias: 'f',
-            describe: 'Your new custom name',
-            demandOption: false
-        },
         'type': {
             alias: 't',
-            describe: 'Type of files you want to rename',
+            describe: 'Extension type of files you want to rename',
             demandOption: false
         },
         'typeGroup': {
             alias: 'g',
-            describe: "Rename files only of a certain kind: images | docs | video | audio | dev"
+            describe: "Extension groups. Available groups: images | docs | video | audio | dev. List of available extensions for each group at Github's repository page."
         },
         'imageSizeGroup': {
             alias: 'i',
-            describe: 'Adds image size group with suffix or prefix '
+            describe: "Adds image size group name depending on file's dimensions with suffix or prefix. Available size groups:  small | medium | large"
         },
         'suffix': {
             alias: 's',

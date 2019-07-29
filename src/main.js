@@ -37,24 +37,19 @@ exports.runRename = (argv) => {
     (function createFilesList() {
 
         const compare = (a, b) => {
-            if (a.ext < b.ext) {
-                return 1
-            }
-            if (a.ext > b.ext) {
-                return -1
-            }
-            return 0
-        };
-        const compare2 = (a, b) => {
             return naturalCompare(a.name, b.name);
         };
 
-
         files = fs.readdirSync(pathToFiles)
             .map(file => path.parse(file))
-            .sort(compare2);
+            .sort(compare);
+        
+        // exclude mac hidden folder setting file
+        files = files.filter(file => file.name !== ".DS_Store");
 
-        console.log(files);
+        // exclude elements without extensions ( folders )
+        files = files.filter(file => file.ext !== "");
+
 
         if (inputType) {
             files = files.filter(file => file.ext == `.${inputType}`);
@@ -70,28 +65,37 @@ exports.runRename = (argv) => {
 
     const renameFiles = (files, newName) => {
         const imageSizeRegex = /\[[w,h]{1,2}\]/g;
+        try {
 
-        files.forEach((file, index) => {
-            let fullFileName = `${pathToFiles}/${file.name}${file.ext}`
-            let newFileName = utils.availableFileName(newName, index + 1, insert.index, pathToFiles);
+            files.forEach((file, index) => {
+                let fullFileName = `${pathToFiles}/${file.name}${file.ext}`
+                let newFileName = utils.availableFileName(newName, index + 1, insert.index, pathToFiles);
+                
+                // check if input type group is set to images, then adds dimensions to the file name
+                if (newFileName.match(imageSizeRegex) && inputTypeGroup == 'images') {
+                    newFileName = insert.imageSize(fullFileName, newFileName);
+                } else if (newFileName.match(imageSizeRegex)) {
+                    newFileName = utils.removeUnusedVariable(newFileName);
+                }
+                console.log(`${file.name}${file.ext} -> ${newFileName}${file.ext}`);
+                let fullNewName = `${pathToFiles}/${newFileName}${file.ext}`;
+                
+                rename(fullFileName, fullNewName).catch(err => logError(err));
+            });
+        } catch (err) {
 
-            let fullNewName = `${pathToFiles}/${newFileName}${file.ext}`;
-
-            // check if input type group is set to images, then adds dimensions to the file name
-            if (fullNewName.match(imageSizeRegex) && inputTypeGroup == 'images') {
-                fullNewName = insert.imageSize(fullFileName, fullNewName);
-            } else if (fullNewName.match(imageSizeRegex)) {
-                fullNewName = utils.removeUnusedVariable(fullNewName);
-            }
-
-            rename(fullFileName, fullNewName).catch(err => logError(err));
-        });
+            console.log("Can't rename! Please, choose different file name.")
+            process.exit(1);
+        }
 
     };
     const addSuffix = (files, suffix) => {
         files.forEach((file, index) => {
             let fullFileName = `${pathToFiles}/${file.name}${file.ext}`
-            let suffixedName = imageSizeGroup ? `${file.name}${insert.imageSizeGroup(fullFileName)}` : `${file.name}${suffix}`;
+            let suffixedName = imageSizeGroup ? `${file.name}${insert.imageSizeGroup(fullFileName, 'suffix')}` : `${file.name}${suffix}`;
+
+            console.log(`${file.name}${file.ext} -> ${suffixedName}${file.ext}`);
+
             let fullNewName = `${pathToFiles}/${insert.index(suffixedName, index + 1)}${file.ext}`
             rename(fullFileName, fullNewName).catch(err => logError(err));
         });
@@ -99,8 +103,12 @@ exports.runRename = (argv) => {
     };
     const addPrefix = (files, prefix) => {
         files.forEach((file, index) => {
-            let prefixedName = `${prefix}${file.name}`;
+            // let prefixedName = `${prefix}${file.name}`;
             let fullFileName = `${pathToFiles}/${file.name}${file.ext}`
+            let prefixedName = imageSizeGroup ? `${insert.imageSizeGroup(fullFileName, 'prefix')}${file.name}` : `${prefix}${file.name}`;
+
+            console.log(`${file.name}${file.ext} -> ${prefixedName}${file.ext}`);
+
             let fullNewName = `${pathToFiles}/${insert.index(prefixedName, index + 1)}${file.ext}`
             rename(fullFileName, fullNewName).catch(err => logError(err));
         });
@@ -109,9 +117,12 @@ exports.runRename = (argv) => {
 
     const addPrefixAndSuffix = (files, prefix, suffix) => {
         files.forEach((file, index) => {
-            let prefixedName = `${prefix}${file.name}${suffix}`;
+            let newName = `${prefix}${file.name}${suffix}`;
             let fullFileName = `${pathToFiles}/${file.name}${file.ext}`
-            let fullNewName = `${pathToFiles}/${insert.index(prefixedName, index + 1)}${file.ext}`
+
+            console.log(`${file.name}${file.ext} -> ${newName}${file.ext}`);
+
+            let fullNewName = `${pathToFiles}/${insert.index(newName, index + 1)}${file.ext}`
             rename(fullFileName, fullNewName).catch(err => logError(err));
         });
 

@@ -68,7 +68,7 @@ switch (targetStr.match(regex)[0]) {
 
 };
 
-exports.imageSizeGroup = (fullFileName) => {
+exports.imageSizeGroup = (fullFileName, type) => {
     const imageSizeRanges = {
         small: [1, 122500],
         medium: [122501, 840000],
@@ -82,7 +82,12 @@ exports.imageSizeGroup = (fullFileName) => {
     let sizesArr = Object.entries(imageSizeRanges);
     for (let i = 0; i < sizesArr.length; i++) {
         if (size >= sizesArr[i][1][0] && size <= sizesArr[i][1][1]) {
-            return `_${sizesArr[i][0]}`;
+            if(type === "suffix") {
+                return `_${sizesArr[i][0]}`;
+
+            } else if (type === "prefix") {
+                return `${sizesArr[i][0]}_`;
+            }
         }
     }
 }

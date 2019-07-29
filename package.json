@@ -1,7 +1,7 @@
 {
-  "name": "@emilthesadcat/rename-them-all",
-  "version": "1.0.0",
-  "description": "CLI tool for ease rename multiple files",
+  "name": "rename-them-all",
+  "version": "0.1.0",
+  "description": "CLI tool for easy renaming multiple files in current directory",
   "main": "rename",
   "bin": {
     "@emilthesadcat/rename-them-all": "bin/rename",
@@ -16,8 +16,8 @@
     "args": "^5.0.1",
     "chalk": "^2.4.2",
     "image-size": "^0.7.4",
-    "inquirer": "^6.3.1",
+    "inquirer": "^6.5.0",
     "natural-compare-lite": "^1.4.0",
-    "yargs": "^13.2.2"
+    "yargs": "^13.3.0"
   }
 }
